@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
+//从配置文件中读取以sky.jwt开头的配置，并绑定到这个类的属性上
 @ConfigurationProperties(prefix = "sky.jwt")
 @Data
 public class JwtProperties {

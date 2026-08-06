@@ -1,22 +1,21 @@
 package com.sky.result;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.util.List;
 
-/**
- * 封装分页查询结果
- */
-@Data
-@AllArgsConstructor
+//封装分页查询对象
 @NoArgsConstructor
-public class PageResult implements Serializable {
+@AllArgsConstructor
+@Data
+public class PageResult {
+    //总记录数
+    private Long total ;
 
-    private long total; //总记录数
-
-    private List records; //当前页数据集合
+    //当前页数据data集合
+    private List records;
 
 }
