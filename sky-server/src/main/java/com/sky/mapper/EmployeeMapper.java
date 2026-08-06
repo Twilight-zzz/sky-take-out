@@ -38,4 +38,10 @@ public interface EmployeeMapper {
      */
     Page<Employee> pageQuery(EmployeePageQueryDTO employeePageQueryDTO) ;
 
+    /**
+     * 根据主键动态修改属性
+     * @param employee 一个只包含需要修改的字段属性的对象，不需要改的字段全是null
+     */
+    void update(Employee employee);
+
 }
