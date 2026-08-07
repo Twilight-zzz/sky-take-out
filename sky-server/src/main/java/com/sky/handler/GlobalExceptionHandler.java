@@ -45,7 +45,8 @@ public class GlobalExceptionHandler {
         else{
             return Result.error(MessageConstant.UNKNOWN_ERROR);
         }
-
-
     }
+
+
+
 }
