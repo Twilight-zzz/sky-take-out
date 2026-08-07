@@ -4,6 +4,7 @@ import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.entity.Category;
 import com.sky.entity.Employee;
 import com.sky.properties.JwtProperties;
 import com.sky.result.PageResult;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -111,7 +113,7 @@ public class EmployeeController {
      */
     @PostMapping("/status/{status}")
     @ApiOperation("启用禁用员工账号")
-    public Result startOrStop(@PathVariable Integer status , Long id){
+    public Result startOrStop(@PathVariable Integer status , @RequestParam Long id){
         log.info("启用禁用员工账号:1.status:{} ，2.员工id: {}" ,status,id);
         employeeService.startOrStop(status , id) ;
         return Result.success() ;
@@ -141,4 +143,6 @@ public class EmployeeController {
         employeeService.update(employeeDTO) ;
         return Result.success() ;
     }
+
+
 }
