@@ -15,7 +15,7 @@ public class PageResult {
     //总记录数
     private Long total ;
 
-    //当前页数据data集合
+    //当前页数据集合
     private List records;
 
 }

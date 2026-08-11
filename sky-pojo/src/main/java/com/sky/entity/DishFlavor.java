@@ -17,7 +17,7 @@ import java.io.Serializable;
 public class DishFlavor implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    //口味id
     private Long id;
     //菜品id
     private Long dishId;
@@ -25,7 +25,7 @@ public class DishFlavor implements Serializable {
     //口味名称
     private String name;
 
-    //口味数据list
+    //口味数据 ["微辣","中辣","巨辣"]
     private String value;
 
 }
