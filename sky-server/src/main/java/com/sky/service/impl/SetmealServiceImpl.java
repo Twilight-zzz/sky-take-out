@@ -6,9 +6,12 @@ import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.SetmealEnableFailedException;
+import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
@@ -29,6 +32,8 @@ public class SetmealServiceImpl implements SetmealService {
     private SetmealMapper setmealMapper;
     @Autowired
     private SetmealDishMapper setmealDishMapper;
+    @Autowired
+    private DishMapper dishMapper;
 
     /**
      * 新增套餐
@@ -83,5 +88,56 @@ public class SetmealServiceImpl implements SetmealService {
             //同时删除setmealdish关联表中的数据
             setmealDishMapper.deleteBySetmealId(setmealId) ;
         });
+    }
+
+    /**
+     * 根据id查询套餐VO
+     * @param id
+     * @return
+     */
+    public SetmealVO getByIdWithDish(Long id){
+        Setmeal setmeal = setmealMapper.getById(id) ;
+        SetmealVO setmealVO = new SetmealVO() ;
+        BeanUtils.copyProperties(setmeal , setmealVO) ;
+        setmealVO.setSetmealDishes(setmealDishMapper.getBySetmealId(id)) ;
+        return setmealVO ;
+    }
+
+
+    /**
+     * 修改套餐
+     * @param setmealDTO
+     */
+    public void updateWithDish(SetmealDTO setmealDTO){
+        Setmeal setmeal = new Setmeal() ;
+        BeanUtils.copyProperties(setmealDTO , setmeal) ;
+        setmealMapper.update(setmeal) ;
+        List<SetmealDish> list = setmealDTO.getSetmealDishes() ;
+        //更新setmealDish表，先删再插
+        Long setmealId = setmeal.getId() ;
+        setmealDishMapper.deleteBySetmealId(setmealId) ;
+        list.forEach(setmealDish -> {
+            setmealDish.setSetmealId(setmealId) ;
+        });
+        setmealDishMapper.insertBatch(list) ;
+    }
+
+    /**
+     * 起售或停售套餐
+     * @param status
+     * @param setmealId
+     */
+    public void startOrStop(Integer status , Long setmealId){
+        //起售套餐时，若套餐里有停售菜品则不能起售
+        if(status == StatusConstant.ENABLE){
+            Integer count = setmealDishMapper.countBySetmealIdAndDishStatus(setmealId , StatusConstant.DISABLE) ;
+            if(count > 0){
+                throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
+            }
+
+        }
+
+        Setmeal setmeal = Setmeal.builder().status(status).id(setmealId).build();
+        setmealMapper.update(setmeal) ;
     }
 }
