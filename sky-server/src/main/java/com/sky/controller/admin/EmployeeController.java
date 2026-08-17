@@ -52,6 +52,7 @@ public class EmployeeController {
         Map<String, Object> claims = new HashMap<>();
         //把id放进token里面
         claims.put(JwtClaimsConstant.EMP_ID, employee.getId());
+        //生成token
         String token = JwtUtil.createJWT(
                 jwtProperties.getAdminSecretKey(),
                 jwtProperties.getAdminTtl(),

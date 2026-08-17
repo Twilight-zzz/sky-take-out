@@ -5,8 +5,11 @@ import com.sky.annotation.AutoFill;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
+import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.*;
+
+import java.util.List;
 
 @Mapper
 public interface SetmealMapper {
@@ -63,4 +66,23 @@ insert into setmeal ( category_id, name, price, description, image, create_time,
      */
     @Delete("delete from setmeal where id = #{id}")
     void deleteById(Long id) ;
+
+    /**
+     * 动态批量查询套餐
+     * @param setmeal
+     * @return
+     */
+    List<Setmeal> list(Setmeal setmeal) ;
+
+    /**
+     * 根据套餐id批量获得菜品VO
+     * @param id
+     * @return
+     */
+    @Select("""
+select sd.name , sd.copies , d.image , d.description
+from setmeal_dish sd left join dish d on sd.dish_id = d.id
+where sd.setmeal_id = #{id}
+""")
+    List<DishItemVO> getDishItemById(Long id) ;
 }

@@ -155,13 +155,35 @@ public class DishServiceImpl implements DishService {
     }
 
     /**ESD
-     * 根据分类查询所有菜品
+     * 根据分类动态查询所有菜品
      * @param categoryId
      * @return
      */
     public List<Dish> listByCategoryId(Long categoryId){
         Dish dish = Dish.builder().categoryId(categoryId).status(StatusConstant.ENABLE).build() ;
         return dishMapper.list(dish) ;
+    }
+
+    /**
+     * 动态且批量返回DishVO
+     * @param dish
+     * @return
+     */
+    public List<DishVO> listWithFlavor(Dish dish){
+        List<Dish> dishList = dishMapper.list(dish) ;
+
+        List<DishVO> dishVOList = new ArrayList<>() ;
+
+        for(Dish d : dishList){
+            DishVO dishVO = new DishVO() ;
+            BeanUtils.copyProperties(d , dishVO) ;
+            List<DishFlavor> flavors = dishFlavorMapper.getByDishId(d.getId());
+            dishVO.setFlavors(flavors) ;
+            dishVOList.add(dishVO) ;
+
+        }
+
+        return dishVOList ;
     }
 
 

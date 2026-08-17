@@ -110,6 +110,7 @@ public class CategoryServiceImpl implements CategoryService {
      * @param type
      * @return
      */
+    //type也可以不传入，那就是查询所有
     public List<Category> list(Integer type){
         return categoryMapper.list(type) ;
     }
