@@ -42,7 +42,7 @@ public class DishServiceImpl implements DishService {
      * 新增菜品
      * @param dishDTO
      */
-    public void save(DishDTO dishDTO){
+    public void saveWithFlavor(DishDTO dishDTO){
         Dish dish = new Dish() ;
         BeanUtils.copyProperties(dishDTO , dish) ;
 
@@ -166,7 +166,7 @@ public class DishServiceImpl implements DishService {
 
     /**
      * 动态且批量返回DishVO
-     * @param dish
+     * @param dish 自定义的dish
      * @return
      */
     public List<DishVO> listWithFlavor(Dish dish){

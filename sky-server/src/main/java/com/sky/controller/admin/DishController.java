@@ -12,9 +12,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController("adminDishController")
 @RequestMapping("/admin/dish")
@@ -25,11 +28,27 @@ public class DishController {
     @Autowired
     DishService dishService ;
 
+    @Autowired
+    RedisTemplate redisTemplate ;
+
+    /**
+     * 清理缓存数据
+     * @param pattern key的模式
+     */
+    private void cleanCache(String pattern){
+        Set<String> keys = redisTemplate.keys(pattern) ;
+        redisTemplate.delete(keys) ;
+    }
+
     @PostMapping
     @ApiOperation("新增菜品")
     public Result save(@RequestBody DishDTO dishDTO){
         log.info("新增菜品： {}" , dishDTO) ;
-        dishService.save(dishDTO) ;
+        dishService.saveWithFlavor(dishDTO) ;
+
+        //清理缓存数据
+        String key = "dish_" + dishDTO.getCategoryId() ;
+        cleanCache(key) ;
         return Result.success() ;
     }
 
@@ -46,6 +65,9 @@ public class DishController {
     public Result delete(@RequestParam List<Long> ids){
         log.info("删除菜品：{}" , ids) ;
         dishService.deleteBatch(ids) ;
+
+
+        cleanCache("dish_*") ;
         return Result.success() ;
     }
 
@@ -62,6 +84,8 @@ public class DishController {
     public Result update(@RequestBody DishDTO dishDTO){
         log.info("修改菜品 ： {}" , dishDTO) ;
         dishService.updateWithFlavor(dishDTO) ;
+
+        cleanCache("dish_*") ;
         return Result.success() ;
 
     }
@@ -71,6 +95,8 @@ public class DishController {
     public Result startOrStop(@PathVariable Integer status , @RequestParam Long id){
         log.info("起售停售菜品: {} , {}" , status, id) ;
         dishService.startOrStop(status , id) ;
+
+        cleanCache("dish_*") ;
         return Result.success() ;
     }
 
