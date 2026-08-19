@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 public class Orders implements Serializable {
 
     /**
+     * 定义状态有关的常量
      * 订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
      */
     public static final Integer PENDING_PAYMENT = 1;
