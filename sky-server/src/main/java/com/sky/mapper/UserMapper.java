@@ -19,4 +19,7 @@ values(#{openId} , #{name} , #{phone} , #{sex} , #{idNumber} , #{avatar} , #{cre
 """)
     @Options(useGeneratedKeys = true , keyProperty = "id")
     void insert(User user) ;
+
+    @Select("select * from user where id = #{id}")
+    User getById(Long id) ;
 }

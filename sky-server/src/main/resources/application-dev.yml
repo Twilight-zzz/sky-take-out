@@ -21,6 +21,14 @@ sky:
   wechat:
     appid: ${WECHAT_APPID}
     secret: ${WECHAT_SECRET}
+    mchid: ${WECHAT_MCHID}
+    mchSerialNo: ${WECHAT_MCHSERIALNO}
+    privateKeyFilePath: ${WECHAT_PRIVATEKEYFILEPATH}
+    apiV3Key: ${WECHAT_APIV3KEY}
+    weChatPayCertFilePath: ${WECHAT_WECHATPAYCERTFILEPATH}
+    notifyUrl: ${NOTIFYURL}
+    refundNotifyUrl: ${REFUNDNOTIFYURL}
+
 spring:
   config:
     import: optional:classpath:application-local.yml
