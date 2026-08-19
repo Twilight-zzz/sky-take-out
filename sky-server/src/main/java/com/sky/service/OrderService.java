@@ -51,4 +51,9 @@ public interface OrderService {
      */
     void cancel(Long id) throws Exception;
 
+    /**
+     * 再来一单
+     * @param id
+     */
+    void repetition(Long id) ;
 }

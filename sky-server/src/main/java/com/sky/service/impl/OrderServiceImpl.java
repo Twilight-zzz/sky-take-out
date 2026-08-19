@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -234,6 +235,25 @@ public class OrderServiceImpl implements OrderService {
 
         ordersMapper.update(order) ;
 
+    }
+
+    /**
+     * 再来一单
+     * @param id 订单id
+     */
+    public void repetition(Long id){
+        Long userId = BaseContext.getCurrentId();
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id) ;
+
+        List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(orderDetail -> {
+            ShoppingCart shoppingCart = new ShoppingCart() ;
+            BeanUtils.copyProperties(orderDetail , shoppingCart , "id") ;
+            shoppingCart.setUserId(userId) ;
+            shoppingCart.setCreateTime(LocalDateTime.now()) ;
+            return shoppingCart ;
+        }).toList();
+        shoppingCartMapper.insertBatch(shoppingCartList);
 
     }
+
 }
