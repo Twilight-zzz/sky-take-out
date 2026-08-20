@@ -29,6 +29,10 @@ sky:
     notifyUrl: ${NOTIFYURL}
     refundNotifyUrl: ${REFUNDNOTIFYURL}
 
+  shop:
+    address: ${SHOP_ADDRESS}
+  baidu:
+    ak: ${BAIDU_AK}
 spring:
   config:
     import: optional:classpath:application-local.yml
