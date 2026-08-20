@@ -256,4 +256,33 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+    /**
+     * 管理端-订单搜索
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO){
+        PageHelper.startPage(ordersPageQueryDTO.getPage() , ordersPageQueryDTO.getPageSize());
+        Page<Orders> page = ordersMapper.pageQuery(ordersPageQueryDTO) ;
+        //根据产品原型可知有时需要额外返回产品信息，所以统一返回OrderVO
+        List<OrderVO> orderVOList = new ArrayList<>();
+
+            for(Orders order : page.getResult()){
+                OrderVO orderVO = new OrderVO() ;
+                BeanUtils.copyProperties(order , orderVO) ;
+                //获取orderdishes
+                List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(order.getId()) ;
+                List<String> orderDishList = orderDetailList.stream().map(x -> { String orderDish = x.getName()
+                        + "*" + x.getNumber() ;
+                    return orderDish ;
+                }).toList() ;
+
+                String orderDishes = orderDishList.isEmpty() ? "" : String.join("；" , orderDishList) + "；";
+                orderVO.setOrderDishes(orderDishes);
+                orderVOList.add(orderVO) ;
+            }
+
+        return new PageResult(page.getTotal() , orderVOList) ;
+    }
+
 }
