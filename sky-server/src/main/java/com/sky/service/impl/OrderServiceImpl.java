@@ -5,9 +5,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -20,6 +18,8 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -295,5 +296,119 @@ public class OrderServiceImpl implements OrderService {
         Integer confirmed = ordersMapper.countStatus(3) ;
         Integer deliveryInProgress = ordersMapper.countStatus(4) ;
         return new  OrderStatisticsVO(toBeConfirmed , confirmed , deliveryInProgress) ;
+    }
+
+    /**
+     * 接单
+     * @param ordersConfirmDTO
+     */
+    public void confirm(OrdersConfirmDTO ordersConfirmDTO){
+        Orders order = Orders.builder().id(ordersConfirmDTO.getId())
+                .status(Orders.CONFIRMED).build();
+
+        ordersMapper.update(order) ;
+    }
+
+    /**
+     * 拒单
+     * @param ordersRejectionDTO
+     */
+    public void reject(OrdersRejectionDTO ordersRejectionDTO) throws Exception{
+        //只有处于待接单是才可以拒单
+        Orders orderDB = ordersMapper.getById(ordersRejectionDTO.getId()) ;
+
+        if(orderDB == null || orderDB.getStatus() !=2 ){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR) ;
+        }
+        //支付状态
+        Integer payStatus = orderDB.getPayStatus();
+        if (payStatus == Orders.PAID) {
+            //用户已支付，需要退款
+            String refund = weChatPayUtil.refund(
+                    orderDB.getNumber(),
+                    orderDB.getNumber(),
+                    new BigDecimal(0.01),
+                    new BigDecimal(0.01));
+            log.info("申请退款：{}", refund);
+        }
+
+        // 拒单需要退款，根据订单id更新订单状态、拒单原因、取消时间
+        Orders orders = new Orders();
+        orders.setId(orderDB.getId());
+        orders.setStatus(Orders.CANCELLED);
+        orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        orders.setCancelTime(LocalDateTime.now());
+
+        ordersMapper.update(orders);
+    }
+
+    /**
+     * 管理端拒单
+     * @param ordersCancelDTO
+     * @throws Exception
+     */
+    public void cancel (OrdersCancelDTO ordersCancelDTO) throws Exception{
+        Orders orderDB = ordersMapper.getById(ordersCancelDTO.getId()) ;
+        //先判断订单是否存在
+        if(orderDB == null){
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND) ;
+        }
+
+        //若用户已经支付则要进行退款
+        Integer payStatus = orderDB.getPayStatus();
+        if(payStatus == Orders.PAID) {
+            //用户已支付，需要退款
+            String refund = weChatPayUtil.refund(
+                    orderDB.getNumber(),
+                    orderDB.getNumber(),
+                    new BigDecimal(0.01),
+                    new BigDecimal(0.01));
+            log.info("申请退款：{}", refund);
+        }
+
+        Orders order = Orders.builder().id(orderDB.getId())
+                .status(Orders.CANCELLED).cancelReason(ordersCancelDTO.getCancelReason()).
+                cancelTime(LocalDateTime.now()).build();
+
+        ordersMapper.update(order) ;
+    }
+
+    /**
+     * 派送订单
+     * @param id
+     */
+    public void deliver(Long id){
+        Orders orderDB = ordersMapper.getById(id) ;
+        if(orderDB == null){
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND) ;
+        }
+        if(! orderDB.getStatus() .equals(Orders.CONFIRMED) ){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR) ;
+        }
+        Orders order = Orders.builder().id(id).status(Orders.DELIVERY_IN_PROGRESS).build();
+        ordersMapper.update(order) ;
+    }
+
+    /**
+     * 完成订单
+     *
+     * @param id
+     */
+    public void complete(Long id) {
+        // 根据id查询订单
+        Orders ordersDB = ordersMapper.getById(id);
+
+        // 校验订单是否存在，并且状态为4
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Orders orders = new Orders();
+        orders.setId(ordersDB.getId());
+        // 更新订单状态,状态转为完成
+        orders.setStatus(Orders.COMPLETED);
+        orders.setDeliveryTime(LocalDateTime.now());
+
+        ordersMapper.update(orders);
     }
 }
