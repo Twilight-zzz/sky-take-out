@@ -2,10 +2,9 @@ package com.sky.mapper;
 
 
 import com.sky.entity.User;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
+
+import java.util.Map;
 
 @Mapper
 public interface UserMapper {
@@ -22,4 +21,7 @@ values(#{openId} , #{name} , #{phone} , #{sex} , #{idNumber} , #{avatar} , #{cre
 
     @Select("select * from user where id = #{id}")
     User getById(Long id) ;
+
+
+    Integer countByMap( Map<String, Object> map) ;
 }

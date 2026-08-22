@@ -68,7 +68,7 @@
                 and status = #{status}
             </if>
             <if test="beginTime != null">
-                and order_time &gt;= #{beginTime}
+                and order_time &gt; #{beginTime}
             </if>
             <if test="endTime != null">
                 and order_time &lt;= #{endTime}
